@@ -48,7 +48,7 @@ MATCH_ALGO = ['HUNGARIAN', 'MIN_DIST']
 
 azure_delay_counter = 0
 AZURE_DELAY_LIMIT = 100
-MSG_TXT = '{{"person": {person},"accuracy": {accuracy}}}'
+MSG_TXT = '{{"employeeID": "{person}","accuracy": {accuracy}}}'
 
 
 def build_argparser():
@@ -331,9 +331,10 @@ class Visualizer:
             global azure_delay_counter
             if azure_delay_counter >= AZURE_DELAY_LIMIT:
                 self.iothub_client_telemetry_sample_run(frame, roi, identity)
+        else:
+            if azure_delay_counter >= AZURE_DELAY_LIMIT:
                 azure_delay_counter = 0
-            else:
-                azure_delay_counter += 1
+
 
             
 
@@ -387,9 +388,12 @@ class Visualizer:
             if self.input_crop is not None:
                 frame = Visualizer.center_crop(frame, self.input_crop)
             detections = self.frame_processor.process(frame)
+            global azure_delay_counter
 
             self.draw_detections(frame, detections)
             self.draw_status(frame, detections)
+
+            azure_delay_counter += 1
 
             if output_stream:
                 output_stream.write(frame)
@@ -473,15 +477,15 @@ class Visualizer:
                 .face_identifier.get_identity_label(identity.id)
 
             #client = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING)
-            print ( "IoT Hub device sending periodic messages, press Ctrl-C to exit" )
+            print ( "IoT Hub device sending periodic messages" )
 
             # Add a custom application property to the message.
             # An IoT hub can filter on these properties without access to the message body.
 
             if identity.id != FaceIdentifier.UNKNOWN_ID:
-                acc = ' %.2f%%' % (100.0 * (1 - identity.distance))
+                acc = round(100.0 * (1 - identity.distance), 2)
             else:
-                acc = '0.0%'
+                acc = 0.0
 
 
             # Build the message with simulated telemetry values.
