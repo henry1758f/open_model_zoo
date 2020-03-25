@@ -1,19 +1,4 @@
 #!/usr/bin/env python
-"""
- Copyright (c) 2018 Intel Corporation
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-"""
 
 import logging as log
 import os.path as osp
@@ -34,7 +19,8 @@ from azure.iot.device import IoTHubDeviceClient, Message
 # The device connection string to authenticate the device with your IoT hub.
 # Using the Azure CLI:
 # az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyNodeDevice --output table
-CONNECTION_STRING = "CONNECTION_STRING"
+
+CONNECTION_STRING = "AZURE_IOT_HUB_CONNECTION_STRING"
 
 from openvino.inference_engine import IENetwork
 from ie_module import InferenceContext
@@ -42,6 +28,7 @@ from landmarks_detector import LandmarksDetector
 from face_detector import FaceDetector
 from faces_database import FacesDatabase
 from face_identifier import FaceIdentifier
+from Face_gallery_sync import run_sample
 
 DEVICE_KINDS = ['CPU', 'GPU', 'FPGA', 'MYRIAD', 'HETERO', 'HDDL']
 MATCH_ALGO = ['HUNGARIAN', 'MIN_DIST']
@@ -175,8 +162,12 @@ class FrameProcessor:
                                     queue_size=self.QUEUE_SIZE)
         log.info("Models are loaded")
 
-        log.info("Building faces database using images from '%s'" % (args.fg))
-        self.faces_database = FacesDatabase(args.fg, self.face_identifier,
+        #log.info("Building faces database using images from '%s'" % (args.fg))
+        
+        run_sample()
+        local_path = osp.join(osp.expanduser("~"),'Face_Gallery')
+        log.info("Building faces database using images from '%s'" % (local_path))
+        self.faces_database = FacesDatabase(local_path, self.face_identifier,
                                             self.landmarks_detector,
                                             self.face_detector if args.run_detector else None, args.no_show)
         self.face_identifier.set_faces_database(self.faces_database)
