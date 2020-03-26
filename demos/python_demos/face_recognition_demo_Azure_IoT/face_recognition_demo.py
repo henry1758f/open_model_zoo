@@ -117,6 +117,12 @@ def build_argparser():
     infer.add_argument('--allow_grow', action='store_true',
                        help="(optional) Allow to grow faces gallery and to dump on disk. " \
                        "Available only if --no_show option is off.")
+        
+    azstrarg = parser.add_argument_group('Azure Connection Option')
+    azstrarg.add_argument('-azstr_iothub',default="", required=True, \
+                    help="Azure IoT Hub Connection String")
+    azstrarg.add_argument('-azstr_storage',default="", required=True, \
+                    help="Azure Storage Connection String")
 
     return parser
 
@@ -164,7 +170,7 @@ class FrameProcessor:
 
         #log.info("Building faces database using images from '%s'" % (args.fg))
         
-        run_sample()
+        run_sample(args.azstr_storage)
         local_path = osp.join(osp.expanduser("~"),'Face_Gallery')
         log.info("Building faces database using images from '%s'" % (local_path))
         self.faces_database = FacesDatabase(local_path, self.face_identifier,
@@ -508,6 +514,8 @@ def main():
                     level=log.INFO if not args.verbose else log.DEBUG, stream=sys.stdout)
 
     log.debug(str(args))
+    CONNECTION_STRING = args.azstr_iothub
+    log.info("Azure IoT Hub Connection String '%s'" % (CONNECTION_STRING))
 
     try:
             global client

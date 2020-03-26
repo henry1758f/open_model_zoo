@@ -5,10 +5,10 @@ import sys
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, PublicAccess
 from azure.core.exceptions import ResourceNotFoundError, ResourceExistsError
 
-def run_sample():
+def run_sample(azs_storage):
     try:
         # Create the BlobServiceClient that is used to call the Blob service for the storage account
-        conn_str = 'AZURE_STORAGE_CONNECTION_STRING'
+        conn_str = azs_storage
         blob_service_client = BlobServiceClient.from_connection_string(conn_str=conn_str)
         # List the containers in the Storage Account and blobs in the container
         all_containers = blob_service_client.list_containers(include_metadata=True)
